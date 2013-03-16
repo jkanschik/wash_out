@@ -193,11 +193,11 @@ describe WashOut do
                       },
                       :return => nil
           def rumba
-            params.should == {}
+            params.should == {"my_array" => []}
             render :soap => nil
           end
         end
-        savon(:rumba, :empty => [])
+        savon(:rumba, :my_array => [])
       end
 
       it "accept nested empty arrays" do
@@ -208,7 +208,7 @@ describe WashOut do
                       },
                       :return => nil
           def rumba
-            params.should == {"nested" => {}}
+            params.should == {"nested" => {"my_array" => []}}
             render :soap => nil
           end
         end

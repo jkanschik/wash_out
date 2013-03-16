@@ -46,45 +46,49 @@ module WashOut
       data = data[key]
       data = [data] if @multiplied && !data.is_a?(Array)
 
-      if struct?
-        data ||= {}
-        if @multiplied
-          data.map do |x|
-            map_struct x do |param, data, elem|
-              param.load(data, elem)
-            end
-          end
-        else
-          map_struct data do |param, data, elem|
+      struct? ? load_struct(data, key) : load_simple(data, key)
+    end
+
+    # Load the data if the parameter is a complex type
+    def load_struct(data, key)
+      data ||= {}
+      if @multiplied
+        data.map do |x|
+          map_struct x do |param, data, elem|
             param.load(data, elem)
           end
         end
       else
-        operation = case type
-          when 'string';    :to_s
-          when 'integer';   :to_i
-          when 'double';    :to_f
-          when 'boolean';   nil
-          when 'date';      :to_date
-          when 'datetime';  :to_datetime
-          when 'time';      :to_time
-          else raise RuntimeError, "Invalid WashOut simple type: #{type}"
-        end
-
-        begin
-          if operation.nil? || data.nil?
-            data
-          elsif @multiplied
-            data.map{|x| x.send(operation)}
-          elsif operation.is_a? Symbol
-            data.send(operation)
-          else
-            operation.call(data)
-          end
-        rescue
-          raise WashOut::Dispatcher::SOAPError, "Invalid SOAP parameter '#{key}' format"
+        map_struct data do |param, data, elem|
+          param.load(data, elem)
         end
       end
+    end
+
+    # Load the data if the parameter is a simple type
+    def load_simple(data, key)
+      operation = case type
+        when 'string';    :to_s
+        when 'integer';   :to_i
+        when 'double';    :to_f
+        when 'boolean';   nil
+        when 'date';      :to_date
+        when 'datetime';  :to_datetime
+        when 'time';      :to_time
+        else raise RuntimeError, "Invalid WashOut simple type: #{type}"
+      end
+
+      if operation.nil? || data.nil?
+        data
+      elsif @multiplied
+        data.map{|x| x.send(operation)}
+      elsif operation.is_a? Symbol
+        data.send(operation)
+      else
+        operation.call(data)
+      end
+    rescue
+      raise WashOut::Dispatcher::SOAPError, "Invalid SOAP parameter '#{key}' format"
     end
 
     # Checks if this Param defines a complex type.
@@ -172,6 +176,8 @@ module WashOut
       @map.map do |param|
         if data.has_key? param.raw_name
           struct[param.raw_name] = yield param, data, param.raw_name
+        elsif param.multiplied
+          struct[param.raw_name] = []
         end
       end
 

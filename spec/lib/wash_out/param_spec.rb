@@ -36,9 +36,30 @@ describe WashOut::Param do
     end
   end
 
-  it "should accept nested empty arrays" do
-    map = WashOut::Param.parse_def( {:nested => {some_attr: :string, empty: [:integer] }} )
-    map[0].load( {nested: nil}, :nested).should == {}
+  context "arrays" do
+
+    it "should load arrays" do
+      map = WashOut::Param.parse_def( {my_array: [:integer] } )
+      map[0].load( {my_array: [1, 2, 3]}, :my_array).should == [1, 2, 3]
+    end
+
+    it "should load empty arrays" do
+      map = WashOut::Param.parse_def( {my_array: [:integer] } )
+      map[0].load( {my_array: []}, :my_array).should == []
+#      map[0].load( {}, :my_array).should == []
+#      map[0].load( nil, :my_array).should == []
+    end
+
+    it "should accept nested arrays" do
+      map = WashOut::Param.parse_def( {:nested => {my_array: [:integer] }} )
+      map[0].load( {nested: {my_array: [1, 2, 3]}}, :nested).should == {"my_array" => [1, 2, 3]}
+    end
+
+    it "should accept nested empty arrays" do
+      map = WashOut::Param.parse_def( {:nested => {my_array: [:integer] }} )
+      map[0].load( {nested: nil}, :nested).should == {"my_array" => []}
+    end
+
   end
 
 end

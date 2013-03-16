@@ -80,6 +80,8 @@ module WashOut
         key = param.raw_name.to_sym
         if xml_data.has_key? key
           params[param.raw_name] = param.load(xml_data, key)
+        elsif param.multiplied
+          params[param.raw_name] = []
         end
       end
       params

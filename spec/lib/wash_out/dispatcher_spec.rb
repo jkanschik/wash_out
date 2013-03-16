@@ -70,7 +70,7 @@ describe WashOut::Dispatcher do
     it "should load params for an empty array" do
       spec = WashOut::Param.parse_def( {:my_array => [:integer] } )
       xml_data = {}
-      dispatcher._load_params(spec, xml_data).should == {}
+      dispatcher._load_params(spec, xml_data).should == {"my_array" => []}
     end
 
     it "should load params for a nested array" do
@@ -82,7 +82,7 @@ describe WashOut::Dispatcher do
     it "should load params for an empty nested array" do
       spec = WashOut::Param.parse_def( {:nested => {empty: [:integer] }} )
       xml_data = {nested: nil}
-      dispatcher._load_params(spec, xml_data).should == {"nested" => {}}
+      dispatcher._load_params(spec, xml_data).should == {"nested" => {"empty" => []}}
     end
 
   end
